@@ -50,6 +50,7 @@ export default function RegisterPage() {
       }
 
       console.log('Registration successful');
+      router.push('/auth/login?registered=true');
       
     } catch (error: any) {
       setError(error.message);
