@@ -1,36 +1,113 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mini Post Scheduler — Weekly Content Calendar
 
-## Getting Started
+Plan, color‑tag, and schedule your social posts on a clean list or a drag‑and‑drop weekly calendar. Built with Next.js App Router, Prisma, and NextAuth (credentials).
 
-First, run the development server:
+## What you can do
+
+- **Create, edit, duplicate, delete posts**
+- **Schedule** posts (validation prevents past dates)
+- **Switch views** between List and Calendar (drag posts to reschedule)
+- **Filter** by platform and status
+- **Mark as posted** when it’s published
+
+## Tech stack
+
+- **Next.js 15 (App Router)** + **React 19**
+- **NextAuth (credentials only)** with **Prisma Adapter**
+- **Prisma** + **SQLite** (local dev)
+- **FullCalendar** (week/month view, drag & drop)
+- **Tailwind CSS v4** styling
+
+---
+
+## Quick start
+
+1. Install dependencies
+
+```bash
+npm install
+```
+
+1. Set environment variables
+
+Create a `.env` file in the project root:
+
+```bash
+DATABASE_URL="file:./prisma/dev.db"
+NEXTAUTH_SECRET="replace-with-a-long-random-string"
+NEXTAUTH_URL="http://localhost:3000"
+```
+
+Tips:
+
+- Generate a secret quickly: `openssl rand -base64 32` (or any secure generator)
+- SQLite file is already in `prisma/dev.db`
+
+1. Prepare the database
+
+```bash
+npx prisma generate
+npx prisma migrate deploy
+```
+
+1. Run the app
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Using the app
 
-## Learn More
+1. Register a user
 
-To learn more about Next.js, take a look at the following resources:
+- Go to `/auth/register` and create an account (email + password)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Login
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Go to `/auth/login` to sign in
 
-## Deploy on Vercel
+1. Create posts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- From `/dashboard`, click “Create Post”
+- Required: `title`, `content`, `platform`, `scheduled date & time`
+- Optional: `color` tag for visual grouping
+- You can duplicate a post; the app ensures the new one is scheduled in the future
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Manage posts
+
+- List view: quick actions to edit, delete, duplicate, mark as posted
+- Calendar view: drag a post to a new day/time to reschedule
+
+---
+
+## API overview
+
+All routes require authentication unless noted.
+
+- `POST /api/auth/register` (public): create user `{ name?, email, password }`
+- `GET /api/posts`: list current user’s posts, supports `?platform=` and `?status=`
+- `POST /api/posts`: create a post; rejects past `scheduledAt`
+- `PATCH /api/posts/[id]`: update fields (`title`, `content`, `platform`, `scheduledAt`, `status`, `color`)
+- `DELETE /api/posts/[id]`: delete a post
+
+Data model (simplified):
+
+```txt
+Post {
+  id, title, content, platform, scheduledAt, status ('scheduled'|'draft'|'posted'), color?, userId
+}
+```
+
+---
+
+## Project structure
+
+- `src/app` — App Router pages (auth, dashboard) and API routes
+- `src/components` — `PostForm`, `PostList`, `CalendarView`
+- `src/lib/prisma.ts` — Prisma client
+- `prisma/schema.prisma` — SQLite models
+
