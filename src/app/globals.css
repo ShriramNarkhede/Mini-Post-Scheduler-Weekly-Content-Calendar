@@ -21,3 +21,28 @@
     overflow: hidden;
   }
 }
+
+/* FullCalendar Custom Styles */
+.fc {
+  font-family: inherit;
+}
+
+.fc .fc-button {
+  @apply bg-blue-600 border-blue-600 text-white hover:bg-blue-700 transition-colors;
+}
+
+.fc .fc-button-active {
+  @apply bg-blue-800 border-blue-800;
+}
+
+.fc .fc-daygrid-day-number {
+  @apply text-gray-700 font-medium;
+}
+
+.fc .fc-col-header-cell {
+  @apply bg-gray-50 font-semibold text-gray-700;
+}
+
+.fc .fc-event {
+  @apply cursor-pointer;
+}

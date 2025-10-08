@@ -15,3 +15,6 @@ export function formatDate(date: Date | string): string {
   });
 }
 
+export function isPastDate(date: Date | string): boolean {
+  return new Date(date) < new Date();
+}
