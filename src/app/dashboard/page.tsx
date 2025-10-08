@@ -1,11 +1,118 @@
 'use client';
 
+import PostForm from '@/components/PostForm';
+import PostList from '@/components/PostList';
+import { Post } from '@/types';
 import { List, Plus, Calendar, LogOut } from 'lucide-react';
 import { useState } from 'react';
 
 export default function DashboardPage() {
 
+    const [showForm, setShowForm] = useState(false);
     const [view, setView] = useState<'list' | 'calendar'>('list');
+    const [editingPost, setEditingPost] = useState<Post | null>(null);
+    const [posts, setPosts] = useState<Post[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const handleFormSuccess = () => {
+        setShowForm(false);
+        setEditingPost(null);
+
+    };
+
+    const fetchPosts = async () => {
+        try {
+          const response = await fetch('/api/posts');
+          const data = await response.json();
+          if (data.data) {
+            setPosts(data.data);
+          }
+        } catch (error) {
+          console.error('Error fetching posts:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const handleDelete = async (id: string) => {
+        try {
+          const response = await fetch(`/api/posts/${id}`, {
+            method: 'DELETE',
+          });
+    
+          if (response.ok) {
+            setPosts(posts.filter((post) => post.id !== id));
+          }
+        } catch (error) {
+          console.error('Error deleting post:', error);
+        }
+      };
+    
+      const handleStatusChange = async (id: string, status: string) => {
+        try {
+          const response = await fetch(`/api/posts/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status }),
+          });
+    
+          if (response.ok) {
+            const data = await response.json();
+            setPosts(posts.map((post) => (post.id === id ? data.data : post)));
+          }
+        } catch (error) {
+          console.error('Error updating post status:', error);
+        }
+      };
+    
+      const handleEdit = (post: Post) => {
+        setEditingPost(post);
+        setShowForm(true);
+      };
+
+      const handleDuplicate = async (post: Post) => {
+        try {
+          const originalDate = new Date(post.scheduledAt);
+          const now = new Date();
+          // Ensure duplicated post is scheduled in the future to satisfy API validation
+          const scheduledAtDate = originalDate > now ? originalDate : new Date(now.getTime() + 60 * 60 * 1000);
+    
+          const response = await fetch('/api/posts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title: `${post.title} (Copy)`,
+              content: post.content,
+              platform: post.platform,
+              scheduledAt: scheduledAtDate.toISOString(),
+              color: post.color,
+            }),
+          });
+    
+          if (response.ok) {
+            const data = await response.json();
+            setPosts([...posts, data.data]);
+          }
+        } catch (error) {
+          console.error('Error duplicating post:', error);
+        }
+      };
+
+    if (showForm) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-6">
+                <div className="max-w-3xl mx-auto">
+                    <PostForm
+                        post={undefined}
+                        onSuccess={handleFormSuccess}
+                        onCancel={() => {
+                            setShowForm(false);
+                        }}
+                    />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
@@ -31,7 +138,7 @@ export default function DashboardPage() {
                 {/* Controls */}
                 <div className="flex flex-wrap gap-4 mb-6">
                     <button
-
+                        onClick={() => setShowForm(true)}
                         className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-md"
                     >
                         <Plus className="w-5 h-5" />
@@ -61,7 +168,13 @@ export default function DashboardPage() {
                         </button>
                     </div>
                 </div>
-                
+                <PostList
+                    posts={posts}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onStatusChange={handleStatusChange}
+                    onDuplicate={handleDuplicate}
+                />
             </div>
         </div>
     );
