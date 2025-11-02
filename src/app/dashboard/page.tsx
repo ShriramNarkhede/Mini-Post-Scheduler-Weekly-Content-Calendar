@@ -47,7 +47,7 @@ export default function DashboardPage() {
   const handleFormSuccess = () => {
     setShowForm(false);
     setEditingPost(null);
-
+    fetchPosts(); // Refresh posts after creation/update
   };
 
   const fetchPosts = async () => {
@@ -173,10 +173,11 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-6">
         <div className="max-w-3xl mx-auto">
           <PostForm
-            post={undefined}
+            post={editingPost || undefined}
             onSuccess={handleFormSuccess}
             onCancel={() => {
               setShowForm(false);
+              setEditingPost(null);
             }}
           />
         </div>
@@ -192,7 +193,7 @@ export default function DashboardPage() {
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Post Scheduler</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Postiify.io</h1>
               <p className="text-gray-600 mt-1">
                 Welcome {session?.user?.name || session?.user?.email}
               </p>

@@ -6,7 +6,7 @@ import prisma from '@/lib/prisma';
 // PATCH update a post
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -15,12 +15,13 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const body = await request.json();
     const { title, content, platform, scheduledAt, status, color } = body;
 
     // Check if post exists and belongs to user
     const existingPost = await prisma.post.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingPost) {
@@ -32,7 +33,7 @@ export async function PATCH(
     }
 
     const post = await prisma.post.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(title && { title }),
         ...(content && { content }),
@@ -56,7 +57,7 @@ export async function PATCH(
 // DELETE a post
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -65,9 +66,11 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
+
     // Check if post exists and belongs to user
     const existingPost = await prisma.post.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingPost) {
@@ -79,7 +82,7 @@ export async function DELETE(
     }
 
     await prisma.post.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ message: 'Post deleted successfully' });

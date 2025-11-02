@@ -5,7 +5,7 @@ import { Providers } from "./providers"
 
 const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
-  title: 'Post Scheduler - Manage Your Social Media',
+  title: 'Postiify.io',
   description: 'Schedule and manage your social media posts across multiple platforms',
 };
 
